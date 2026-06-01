@@ -1,0 +1,105 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id        Int      @id @default(autoincrement())
+  nombre    String
+  correo    String   @unique
+  password  String
+  rol       String   @default("tecnico")
+  activo    Boolean  @default(true)
+  creadoEn  DateTime @default(now())
+
+  @@map("usuarios")
+}
+
+model Cliente {
+  id        Int      @id @default(autoincrement())
+  nombre    String
+  correo    String   @unique
+  password  String
+  telefono  String?
+  empresa   String?
+  activo    Boolean  @default(true)
+  creadoEn  DateTime @default(now())
+
+  pedidos   Pedido[]
+
+  @@map("clientes")
+}
+
+model Pedido {
+  id          Int      @id @default(autoincrement())
+  clienteId   Int
+  descripcion String
+  estado      String   @default("pendiente")
+  creadoEn    DateTime @default(now())
+
+  cliente     Cliente  @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+
+  @@map("pedidos")
+}
+
+model Equipo {
+  id            Int       @id @default(autoincrement())
+  nombre        String
+  tipo          String
+  marca         String
+  modelo        String?
+  serial        String?   @unique
+  estado        String    @default("operativo")
+  ubicacion     String?
+  enStock       Boolean   @default(false)
+  precio        Float?
+  descripcionVenta String?
+  fechaCompra   DateTime?
+  creadoEn      DateTime  @default(now())
+  actualizadoEn DateTime  @updatedAt
+
+  mantenimientos Mantenimiento[]
+
+  @@map("equipos")
+}
+
+model Mantenimiento {
+  id          Int      @id @default(autoincrement())
+  equipoId    Int
+  descripcion String
+  tipo        String   @default("preventivo")
+  tecnico     String?
+  costo       Float?
+  fecha       DateTime @default(now())
+
+  equipo Equipo @relation(fields: [equipoId], references: [id], onDelete: Cascade)
+
+  @@map("mantenimientos")
+}
+
+model StockArchivo {
+  id          Int      @id @default(autoincrement())
+  nombre      String
+  descripcion String?
+  rutaArchivo String
+  subidoPor   String?
+  activo      Boolean  @default(true)
+  creadoEn    DateTime @default(now())
+
+  @@map("stock_archivos")
+}
+
+model Reporte {
+  id          Int      @id @default(autoincrement())
+  titulo      String
+  tipo        String
+  contenido   String
+  generadoPor String?
+  creadoEn    DateTime @default(now())
+
+  @@map("reportes")
+}
